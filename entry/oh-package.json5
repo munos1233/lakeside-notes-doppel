@@ -1,0 +1,9 @@
+{
+  "name": "entry",
+  "version": "1.0.1",
+  "description": "李鬼演示组件入口",
+  "main": "",
+  "author": "jinyinhu",
+  "license": "",
+  "dependencies": {}
+}
