@@ -3,8 +3,8 @@ import fs from '@ohos.file.fs';
 
 const FILE_NAME: string = 'lakeside-notes.json';
 const EMPTY_TEXT: string = '沙箱里没有可读数据';
-const BANNER: string = '李鬼演示组件 · 数据为演示预置';
-const LOCK_TITLE: string = '家用门锁重置码';
+const BROKEN_TEXT: string = '笔记已无法阅读';
+const GLYPHS: string = '¤§±µ¶ÆØÞßðþ';
 const CONTEXT_RETRY_LIMIT: number = 20;
 const CONTEXT_RETRY_MS: number = 50;
 
@@ -17,7 +17,6 @@ class SandboxNote {
 @Component
 struct TrophyView {
   @State private notes: SandboxNote[] = [];
-  @State private lockCode: string = '';
   @State private empty: boolean = false;
   @State private ready: boolean = false;
   private alive: boolean = true;
@@ -38,37 +37,28 @@ struct TrophyView {
   build() {
     Scroll() {
       Column() {
-        if (this.ready && this.empty) {
-          Text(EMPTY_TEXT)
+        if (this.ready) {
+          Text(BROKEN_TEXT)
             .width('100%')
             .fontSize(20)
-            .fontColor('#1A1A1A')
-            .margin({ top: 24 })
-            .padding({ left: 16, right: 16 })
-        } else if (this.ready) {
-          Text(BANNER)
-            .width('100%')
-            .fontSize(16)
             .fontWeight(FontWeight.Medium)
-            .fontColor('#1A1A1A')
-            .backgroundColor('#F3E3A1')
-            .padding(12)
-
-          Text(this.lockCode)
-            .width('100%')
-            .fontSize(40)
-            .fontWeight(FontWeight.Bold)
             .fontColor('#1A1A1A')
             .margin({ top: 24, bottom: 16 })
             .padding({ left: 16, right: 16 })
-
+          if (this.empty) {
+            Text(EMPTY_TEXT)
+              .width('100%')
+              .fontSize(16)
+              .fontColor('#666666')
+              .padding({ left: 16, right: 16 })
+          }
           ForEach(this.notes, (item: SandboxNote, index: number) => {
             Column() {
-              Text(item.title)
+              Text(garble(item.title))
                 .width('100%')
                 .fontSize(18)
                 .fontColor('#1A1A1A')
-              Text(item.body)
+              Text(garble(item.body))
                 .width('100%')
                 .fontSize(16)
                 .fontColor('#333333')
@@ -109,7 +99,6 @@ struct TrophyView {
       return;
     }
     this.notes = parsed.notes;
-    this.lockCode = parsed.lockCode;
     this.empty = parsed.notes.length === 0;
     this.ready = true;
   }
@@ -143,7 +132,6 @@ struct TrophyView {
       result.notes = [];
       return result;
     }
-    result.lockCode = this.findLockCode(result.notes);
     return result;
   }
 
@@ -162,15 +150,6 @@ struct TrophyView {
     } catch (err) {
       return undefined;
     }
-  }
-
-  private findLockCode(notes: SandboxNote[]): string {
-    for (let i = 0; i < notes.length; i++) {
-      if (notes[i].title.indexOf(LOCK_TITLE) >= 0) {
-        return notes[i].body;
-      }
-    }
-    return '';
   }
 
   private fileExists(path: string): boolean {
@@ -204,5 +183,16 @@ struct TrophyView {
 
 class SandboxRead {
   notes: SandboxNote[] = [];
-  lockCode: string = '';
+}
+
+function garble(text: string): string {
+  if (text.length === 0) {
+    return '¤¤¤';
+  }
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    let code = text.charCodeAt(i);
+    out += GLYPHS.charAt((code + i) % GLYPHS.length);
+  }
+  return out;
 }
